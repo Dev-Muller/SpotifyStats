@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  // Spotify OAuth linkage (tokens stored server-side only, never sent to client)
+  spotifyId           String?  @unique
+  spotifyAccessToken   String?
+  spotifyRefreshToken  String?
+  spotifyTokenExpires  DateTime?
+
+  shareToken    String?   @unique
+  shareEnabled  Boolean   @default(false)
+  theme         String    @default("dark")
+
+  accounts      Account[]
+  sessions      Session[]
+  plays         Play[]
+  goals         Goal[]
+  badges        UserBadge[]
+  uploads       Upload[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// One row per upload batch, so users can see/delete what they imported.
+model Upload {
+  id        String   @id @default(cuid())
+  userId    String
+  fileName  String
+  trackCount Int
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plays Play[]
+
+  @@index([userId])
+}
+
+// Normalized listening event, merged from Spotify API and/or JSON upload.
+model Play {
+  id          String    @id @default(cuid())
+  userId      String
+  uploadId    String?
+
+  trackName   String
+  artistName  String
+  albumName   String?
+  genre       String?
+  country     String?
+
+  msPlayed    Int
+  playedAt    DateTime
+  skipped     Boolean   @default(false)
+  source      String    @default("upload") // "upload" | "api"
+
+  spotifyTrackUri String?
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  upload Upload? @relation(fields: [uploadId], references: [id], onDelete: SetNull)
+
+  @@index([userId, playedAt])
+  @@index([userId, artistName])
+  @@index([userId, trackName])
+  @@index([spotifyTrackUri])
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  key         String @unique
+  name        String
+  description String
+  icon        String
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  targetHours Int
+  year      Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, year])
+}
