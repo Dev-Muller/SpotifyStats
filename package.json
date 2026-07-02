@@ -1,0 +1,44 @@
+{
+  "name": "spotify-status-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.2",
+    "@prisma/client": "^5.22.0",
+    "clsx": "^2.1.1",
+    "d3-geo": "^3.1.1",
+    "date-fns": "^4.4.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "lucide-react": "^1.21.0",
+    "next": "14.2.35",
+    "next-auth": "^5.0.0-beta.31",
+    "next-themes": "^0.4.6",
+    "papaparse": "^5.5.4",
+    "prisma": "^5.22.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-simple-maps": "^3.0.0",
+    "recharts": "^3.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
